@@ -1,0 +1,22 @@
+{
+  "name": "mobile",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "build": "bunx cap sync",
+    "dev": "cd ../web && bun run dev",
+    "ios": "bunx cap open ios",
+    "android": "bunx cap open android"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0",
+    "@capacitor/android": "^6.0.0"
+  },
+  "capacitor": {
+    "appId": "com.gopx.drive",
+    "appName": "gopx-drive",
+    "webDir": "../web/dist"
+  }
+}

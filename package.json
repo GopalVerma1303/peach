@@ -1,0 +1,23 @@
+{
+  "name": "gopx-drive",
+  "private": true,
+  "workspaces": ["packages/*", "apps/*"],
+  "packageManager": "bun@1.1.38",
+  "scripts": {
+    "build": "bun run --filter @gopx-drive/core build && bun run --filter @gopx-drive/cache-web build && bun run --filter web build",
+    "dev": "cd apps/web && bun dev",
+    "dev:web": "cd apps/web && bun dev",
+    "build:web": "bun run --filter web build",
+    "desktop": "bun run --filter desktop dev",
+    "build:desktop": "bun run --filter desktop build",
+    "mobile": "bun run --filter mobile dev",
+    "build:mobile": "bun run --filter mobile build",
+    "typecheck": "bun run --filter '*' typecheck"
+  },
+  "devDependencies": {
+    "typescript": "~5.6.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

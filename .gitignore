@@ -1,0 +1,15 @@
+node_modules
+package-lock.json
+dist
+*.local
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+.idea
+.vscode
+apps/desktop/out
+apps/mobile/ios
+apps/mobile/android
+.capacitor
