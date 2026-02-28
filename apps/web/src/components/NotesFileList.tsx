@@ -19,24 +19,32 @@ export default function NotesFileList() {
 
   const currentNoteId = id && id !== 'new' ? id : null;
 
+  const today = new Date().toISOString().slice(0, 10);
+
   return (
     <div className="notes-file-list">
-      <div className="notes-file-list-toolbar">
-        <Link to="/notes/new" className="obsidian-icon-btn" title="New note">
-          <Codicon name="add" size={18} />
-        </Link>
-        <button type="button" className="obsidian-icon-btn" title="Search">
-          <Codicon name="search" size={18} />
-        </button>
-        <button type="button" className="obsidian-icon-btn" title="New folder">
-          <Codicon name="new-folder" size={18} />
-        </button>
-        <button type="button" className="obsidian-icon-btn" title="Sync">
-          <Codicon name="sync" size={18} />
-        </button>
-        <button type="button" className="obsidian-icon-btn" title="Split">
-          <Codicon name="split-horizontal" size={18} />
-        </button>
+      <div className="notes-file-list-header">
+        <div className="notes-file-list-toolbar">
+          <button type="button" className="obsidian-icon-btn" title="Edit">
+            <Codicon name="edit" size={16} />
+          </button>
+          <Link to="/notes/new" className="obsidian-icon-btn" title="New note">
+            <Codicon name="add" size={16} />
+          </Link>
+          <button type="button" className="obsidian-icon-btn" title="Upload">
+            <Codicon name="file-media" size={16} />
+          </button>
+          <button type="button" className="obsidian-icon-btn" title="Sort">
+            <Codicon name="sort-precedence" size={16} />
+          </button>
+          <button type="button" className="obsidian-icon-btn" title="Move up">
+            <Codicon name="arrow-up" size={16} />
+          </button>
+          <button type="button" className="obsidian-icon-btn" title="Move down">
+            <Codicon name="arrow-down" size={16} />
+          </button>
+        </div>
+        <span className="notes-file-list-date">{today}</span>
       </div>
       <div className="notes-file-list-items">
         {notes.map((n) => (

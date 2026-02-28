@@ -27,7 +27,7 @@ export default function NoteEditorObsidian() {
   const [saving, setSaving] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [showOutline, setShowOutline] = useState(true);
-  const [previewMode, setPreviewMode] = useState<'edit' | 'preview' | 'split'>('split');
+  const [previewMode, setPreviewMode] = useState<'edit' | 'preview'>('preview');
 
   useEffect(() => {
     if (isNew) {
@@ -117,28 +117,9 @@ export default function NoteEditorObsidian() {
 
   return (
     <div className="obsidian-editor-layout">
-      {/* Top bar */}
+      {/* Top bar - inspiration: nav + title center, icons right */}
       <header className="obsidian-topbar">
-        <div className="obsidian-topbar-left">
-          <button type="button" className="obsidian-icon-btn" title="New note" onClick={() => navigate('/notes/new')}>
-            <Codicon name="add" size={18} />
-          </button>
-          <button type="button" className="obsidian-icon-btn" title="Folder">
-            <Codicon name="folder" size={18} />
-          </button>
-          <button type="button" className="obsidian-icon-btn" title="Table">
-            <Codicon name="table" size={18} />
-          </button>
-          <button type="button" className="obsidian-icon-btn" title="Image">
-            <Codicon name="file-media" size={18} />
-          </button>
-          <button type="button" className="obsidian-icon-btn" title="Split view">
-            <Codicon name="split-horizontal" size={18} onClick={() => setPreviewMode('split')} />
-          </button>
-          <button type="button" className="obsidian-icon-btn" title="Preview">
-            <Codicon name="preview" size={18} onClick={() => setPreviewMode('preview')} />
-          </button>
-        </div>
+        <div className="obsidian-topbar-left" />
         <div className="obsidian-topbar-center">
           <button type="button" className="obsidian-icon-btn" onClick={() => navigate(-1)} title="Back">
             <Codicon name="arrow-left" size={16} />
@@ -152,22 +133,26 @@ export default function NoteEditorObsidian() {
           <button type="button" className="obsidian-icon-btn" title="Menu">
             <Codicon name="ellipsis" size={18} />
           </button>
+          <button type="button" className="obsidian-icon-btn" title="Document">
+            <Codicon name="file-text" size={18} />
+          </button>
           <button type="button" className="obsidian-icon-btn" title="Search">
             <Codicon name="search" size={18} />
           </button>
-          <button type="button" className="obsidian-icon-btn" title="Split" onClick={() => setShowOutline(!showOutline)}>
+          <button type="button" className="obsidian-icon-btn" title="Layout" onClick={() => setShowOutline(!showOutline)}>
             <Codicon name="split-horizontal" size={18} />
           </button>
-          <button type="button" className="obsidian-icon-btn" title="Close">
+          <button type="button" className="obsidian-icon-btn" title="Close" onClick={() => navigate('/notes')}>
             <Codicon name="close" size={18} />
           </button>
         </div>
       </header>
 
-      {/* Main content + right outline */}
+      {/* Main content + right outline - single pane like inspiration */}
       <div className="obsidian-content-wrapper">
         <main className="obsidian-main-content">
           <div className="obsidian-doc-header">
+            <span className="obsidian-doc-date">{new Date().toISOString().slice(0, 10)}</span>
             <input
               type="text"
               value={title}
@@ -177,13 +162,12 @@ export default function NoteEditorObsidian() {
               placeholder="Untitled"
             />
           </div>
-          <div className="obsidian-editor-area">
-            {previewMode !== 'preview' && (
+          <div className="obsidian-editor-area obsidian-editor-area-single">
+            {previewMode === 'edit' ? (
               <div className="obsidian-editor-pane">
                 <MarkdownEditor value={content} onChange={setContent} minHeight="500px" />
               </div>
-            )}
-            {previewMode !== 'edit' && (
+            ) : (
               <div className="obsidian-preview-pane">
                 <div className="obsidian-preview-inner">
                   <MarkdownPreview content={content} />
@@ -200,12 +184,18 @@ export default function NoteEditorObsidian() {
         )}
       </div>
 
-      {/* Bottom status bar */}
+      {/* Bottom status bar - inspiration: backlinks, words/chars, settings */}
       <footer className="obsidian-statusbar">
         <div className="obsidian-statusbar-left">
+          <Codicon name="link" size={14} />
           <span>0 backlinks</span>
-          <button type="button" className="obsidian-icon-btn" title="Edit">
-            <Codicon name="edit" size={14} />
+          <button
+            type="button"
+            className="obsidian-icon-btn"
+            title={previewMode === 'edit' ? 'Reading view' : 'Edit'}
+            onClick={() => setPreviewMode((m) => (m === 'edit' ? 'preview' : 'edit'))}
+          >
+            <Codicon name={previewMode === 'edit' ? 'preview' : 'edit'} size={14} />
           </button>
         </div>
         <div className="obsidian-statusbar-center">
@@ -224,6 +214,9 @@ export default function NoteEditorObsidian() {
               <Codicon name="share" size={14} />
             </button>
           )}
+          <button type="button" className="obsidian-icon-btn" title="Settings" onClick={() => navigate('/settings')}>
+            <Codicon name="settings-gear" size={14} />
+          </button>
         </div>
       </footer>
     </div>

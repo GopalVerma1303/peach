@@ -36,7 +36,7 @@ export default function DocumentOutline({ content, onHeadingClick }: DocumentOut
   return (
     <div className="document-outline">
       <div className="document-outline-header">
-        <Codicon name="list-flat" size={14} />
+        <Codicon name="file-text" size={14} />
         <span>Outline</span>
         <button type="button" className="obsidian-icon-btn" title="More">
           <Codicon name="ellipsis" size={14} />
