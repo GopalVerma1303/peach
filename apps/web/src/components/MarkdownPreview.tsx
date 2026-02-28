@@ -21,9 +21,9 @@ export default function MarkdownPreview({ content, className }: MarkdownPreviewP
         {children}
       </a>
     ),
-    code({ node, inline, className: codeClassName, children, ...props }) {
+    code({ className: codeClassName, children, ...props }) {
       const match = /language-(\w+)/.exec(codeClassName || '');
-      if (!inline && match) {
+      if (match) {
         return (
           <div className="obsidian-code-block">
             <span className="obsidian-code-lang">{match[1]}</span>

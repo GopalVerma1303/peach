@@ -1,20 +1,13 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Codicon from '../components/Codicon';
-import MarkdownEditor from '../components/MarkdownEditor';
+import MarkdownEditor, { TOOLBAR_BUTTONS, type MarkdownEditorHandle } from '../components/MarkdownEditor';
 import MarkdownPreview from '../components/MarkdownPreview';
 import DocumentOutline from '../components/DocumentOutline';
 import type { NoteWithDirty } from '@gopx-drive/core';
 
 const AUTOSAVE_MS = 2000;
-
-function countWords(text: string): number {
-  return text
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length;
-}
 
 export default function NoteEditorObsidian() {
   const { id } = useParams<{ id: string }>();
@@ -25,9 +18,9 @@ export default function NoteEditorObsidian() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
-  const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [showOutline, setShowOutline] = useState(true);
   const [previewMode, setPreviewMode] = useState<'edit' | 'preview'>('preview');
+  const editorRef = useRef<MarkdownEditorHandle>(null);
 
   useEffect(() => {
     if (isNew) {
@@ -91,68 +84,67 @@ export default function NoteEditorObsidian() {
     return () => clearTimeout(t);
   }, [title, content, note, isNew, saveToCache]);
 
-  const handleShare = async () => {
-    if (!note) return;
-    const token = note.share_token ?? crypto.randomUUID().replace(/-/g, '');
-    await cache.upsertNote({ ...note, share_token: token, updated_at: new Date().toISOString(), dirty: true });
-    await cache.addPendingOp({ type: 'note_update', id: note.id, payload: { share_token: token } });
-    setNote((n) => (n ? { ...n, share_token: token } : null));
-    setShareUrl(`${window.location.origin}/share/${token}`);
+  const handleSave = async () => {
+    setSaving(true);
+    await saveToCache({ title: title || undefined, content });
+    setSaving(false);
     if (syncService.isOnline()) syncService.sync().catch(() => {});
   };
-
-  const handleUnshare = async () => {
-    if (!note) return;
-    await cache.upsertNote({ ...note, share_token: null, updated_at: new Date().toISOString(), dirty: true });
-    await cache.addPendingOp({ type: 'note_update', id: note.id, payload: { share_token: undefined } });
-    setNote((n) => (n ? { ...n, share_token: null } : null));
-    setShareUrl(null);
-  };
-
-  const displayTitle = title || 'Untitled';
-  const wordCount = useMemo(() => countWords(content), [content]);
-  const charCount = useMemo(() => content.length, [content]);
 
   if (!isNew && note === undefined) return <div className="obsidian-loading">Loading...</div>;
 
   return (
     <div className="obsidian-editor-layout">
-      {/* Top bar - inspiration: nav + title center, icons right */}
-      <header className="obsidian-topbar">
-        <div className="obsidian-topbar-left" />
-        <div className="obsidian-topbar-center">
-          <button type="button" className="obsidian-icon-btn" onClick={() => navigate(-1)} title="Back">
-            <Codicon name="arrow-left" size={16} />
+      {/* Notes header bar: save, preview toggle, toolbar */}
+      <header className="obsidian-notes-header">
+        <div className="obsidian-notes-header-left">
+          <button
+            type="button"
+            className="obsidian-icon-btn"
+            title="Save"
+            onClick={handleSave}
+            disabled={saving}
+          >
+            <Codicon name="check" size={18} />
           </button>
-          <button type="button" className="obsidian-icon-btn" onClick={() => navigate(1)} title="Forward">
-            <Codicon name="arrow-right" size={16} />
+          <button
+            type="button"
+            className="obsidian-icon-btn"
+            title={previewMode === 'edit' ? 'Preview' : 'Edit'}
+            onClick={() => setPreviewMode((m) => (m === 'edit' ? 'preview' : 'edit'))}
+          >
+            <Codicon name={previewMode === 'edit' ? 'preview' : 'edit'} size={18} />
           </button>
-          <span className="obsidian-doc-title">{displayTitle}</span>
-        </div>
-        <div className="obsidian-topbar-right">
-          <button type="button" className="obsidian-icon-btn" title="Menu">
-            <Codicon name="ellipsis" size={18} />
-          </button>
-          <button type="button" className="obsidian-icon-btn" title="Document">
-            <Codicon name="file-text" size={18} />
-          </button>
-          <button type="button" className="obsidian-icon-btn" title="Search">
-            <Codicon name="search" size={18} />
-          </button>
-          <button type="button" className="obsidian-icon-btn" title="Layout" onClick={() => setShowOutline(!showOutline)}>
+          <button
+            type="button"
+            className="obsidian-icon-btn"
+            title={showOutline ? 'Hide outline' : 'Show outline'}
+            onClick={() => setShowOutline(!showOutline)}
+          >
             <Codicon name="split-horizontal" size={18} />
           </button>
-          <button type="button" className="obsidian-icon-btn" title="Close" onClick={() => navigate('/notes')}>
-            <Codicon name="close" size={18} />
-          </button>
         </div>
+        {previewMode === 'edit' && (
+          <div className="obsidian-notes-header-toolbar">
+            {TOOLBAR_BUTTONS.map(({ cmd, icon, title }) => (
+              <button
+                key={cmd}
+                type="button"
+                className="obsidian-icon-btn"
+                title={title}
+                onClick={() => editorRef.current?.runCommand(cmd)}
+              >
+                <Codicon name={icon} size={16} />
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
-      {/* Main content + right outline - single pane like inspiration */}
+      {/* Main content + right outline */}
       <div className="obsidian-content-wrapper">
         <main className="obsidian-main-content">
           <div className="obsidian-doc-header">
-            <span className="obsidian-doc-date">{new Date().toISOString().slice(0, 10)}</span>
             <input
               type="text"
               value={title}
@@ -165,7 +157,13 @@ export default function NoteEditorObsidian() {
           <div className="obsidian-editor-area obsidian-editor-area-single">
             {previewMode === 'edit' ? (
               <div className="obsidian-editor-pane">
-                <MarkdownEditor value={content} onChange={setContent} minHeight="500px" />
+                <MarkdownEditor
+                  ref={editorRef}
+                  value={content}
+                  onChange={setContent}
+                  minHeight="500px"
+                  showToolbar={false}
+                />
               </div>
             ) : (
               <div className="obsidian-preview-pane">
@@ -183,42 +181,6 @@ export default function NoteEditorObsidian() {
           </aside>
         )}
       </div>
-
-      {/* Bottom status bar - inspiration: backlinks, words/chars, settings */}
-      <footer className="obsidian-statusbar">
-        <div className="obsidian-statusbar-left">
-          <Codicon name="link" size={14} />
-          <span>0 backlinks</span>
-          <button
-            type="button"
-            className="obsidian-icon-btn"
-            title={previewMode === 'edit' ? 'Reading view' : 'Edit'}
-            onClick={() => setPreviewMode((m) => (m === 'edit' ? 'preview' : 'edit'))}
-          >
-            <Codicon name={previewMode === 'edit' ? 'preview' : 'edit'} size={14} />
-          </button>
-        </div>
-        <div className="obsidian-statusbar-center">
-          <span>
-            {wordCount} words {charCount.toLocaleString()} characters
-          </span>
-        </div>
-        <div className="obsidian-statusbar-right">
-          {saving && <span className="obsidian-saving">Saving...</span>}
-          {note?.share_token ? (
-            <button type="button" className="obsidian-icon-btn" onClick={handleUnshare} title="Revoke share">
-              <Codicon name="remove" size={14} />
-            </button>
-          ) : (
-            <button type="button" className="obsidian-icon-btn" onClick={handleShare} title="Share">
-              <Codicon name="share" size={14} />
-            </button>
-          )}
-          <button type="button" className="obsidian-icon-btn" title="Settings" onClick={() => navigate('/settings')}>
-            <Codicon name="settings-gear" size={14} />
-          </button>
-        </div>
-      </footer>
     </div>
   );
 }

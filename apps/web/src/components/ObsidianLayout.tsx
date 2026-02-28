@@ -2,28 +2,27 @@ import { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import Codicon from './Codicon';
 import NotesFileList from './NotesFileList';
+import FilesFileList from './FilesFileList';
 
 const leftNavItems = [
-  { to: '/home', icon: 'graph', label: 'Graph' },
-  { to: '/notes', icon: 'files', label: 'All notes' },
+  { to: '/notes', icon: 'file-text', label: 'Notes' },
+  { to: '/files', icon: 'files', label: 'Files' },
   { to: '/calendar', icon: 'calendar', label: 'Calendar' },
-  { to: '/notes/new', icon: 'file-text', label: 'New note' },
-  { to: '/folders', icon: 'folder-opened', label: 'Folders' },
-  { to: '/archive', icon: 'archive', label: 'Archive' },
   { to: '/settings', icon: 'settings-gear', label: 'Settings' },
 ];
 
 const mobileNavItems = [
-  { to: '/home', icon: 'home', label: 'Home' },
-  { to: '/notes', icon: 'files', label: 'Notes' },
-  { to: '/notes/new', icon: 'add', label: 'New' },
-  { to: '/folders', icon: 'folder-opened', label: 'Folders' },
+  { to: '/notes', icon: 'file-text', label: 'Notes' },
+  { to: '/files', icon: 'files', label: 'Files' },
+  { to: '/calendar', icon: 'calendar', label: 'Calendar' },
   { to: '/settings', icon: 'settings-gear', label: 'Settings' },
 ];
 
 export default function ObsidianLayout() {
   const location = useLocation();
   const isNotesView = location.pathname.startsWith('/notes');
+  const isFilesView = location.pathname.startsWith('/files');
+  const showSubSidebar = isNotesView || isFilesView;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
@@ -44,9 +43,9 @@ export default function ObsidianLayout() {
         <span className="obsidian-mobile-title">Peach</span>
       </header>
 
-      {/* Left sidebar - overlay on mobile when open */}
+      {/* Icon-only sidebar */}
       <aside
-        className={`obsidian-sidebar-left ${mobileMenuOpen ? 'obsidian-sidebar-open' : ''}`}
+        className={`obsidian-sidebar-icons ${mobileMenuOpen ? 'obsidian-sidebar-open' : ''}`}
         aria-hidden={!mobileMenuOpen}
       >
         <div className="obsidian-sidebar-nav">
@@ -54,33 +53,26 @@ export default function ObsidianLayout() {
             <NavLink
               key={to}
               to={to}
-              end={to === '/notes' ? false : to === '/home'}
+              end={to === '/notes' ? false : to === '/files' ? false : true}
               className={({ isActive }) =>
-                `obsidian-nav-item ${isActive || (to === '/notes' && isNotesView) ? 'active' : ''}`
+                `obsidian-nav-item ${isActive || (to === '/notes' && isNotesView) || (to === '/files' && isFilesView) ? 'active' : ''}`
               }
               title={label}
               onClick={closeMobileMenu}
             >
               <Codicon name={icon} size={20} />
-              <span className="obsidian-nav-label">{label}</span>
             </NavLink>
           ))}
         </div>
-        <div className="obsidian-sidebar-content">
-          {isNotesView ? <NotesFileList /> : null}
-        </div>
-        <div className="obsidian-sidebar-footer">
-          <span className="obsidian-vault-name">
-            <Codicon name="repo" size={16} /> Obsidian Vault
-          </span>
-          <a href="#" className="obsidian-icon-btn" title="Help" onClick={(e) => e.preventDefault()}>
-            <Codicon name="question" size={16} />
-          </a>
-          <NavLink to="/settings" className="obsidian-icon-btn" title="Settings" onClick={closeMobileMenu}>
-            <Codicon name="settings-gear" size={16} />
-          </NavLink>
-        </div>
       </aside>
+
+      {/* Sub-sidebar */}
+      {showSubSidebar && (
+        <aside className="obsidian-sub-sidebar">
+          {isNotesView && <NotesFileList />}
+          {isFilesView && <FilesFileList />}
+        </aside>
+      )}
 
       {/* Backdrop when mobile menu is open */}
       <div
@@ -90,7 +82,7 @@ export default function ObsidianLayout() {
       />
 
       {/* Main content */}
-      <div className="obsidian-main-wrapper">
+      <div className={`obsidian-main-wrapper ${showSubSidebar ? 'has-sub-sidebar' : ''}`}>
         <main className="obsidian-main">
           <Outlet />
         </main>
@@ -102,9 +94,9 @@ export default function ObsidianLayout() {
           <NavLink
             key={to}
             to={to}
-            end={to === '/notes' ? false : to === '/home'}
+            end={to === '/notes' ? false : to === '/files' ? false : true}
             className={({ isActive }) =>
-              `obsidian-bottom-nav-item ${isActive || (to === '/notes' && isNotesView) ? 'active' : ''}`
+              `obsidian-bottom-nav-item ${isActive || (to === '/notes' && isNotesView) || (to === '/files' && isFilesView) ? 'active' : ''}`
             }
             title={label}
             onClick={closeMobileMenu}

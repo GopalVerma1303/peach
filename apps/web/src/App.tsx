@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import NoteEditorObsidian from './pages/NoteEditorObsidian';
 import Files from './pages/Files';
+import FileDetail from './pages/FileDetail';
 import FoldersList from './pages/FoldersList';
 import FolderDetail from './pages/FolderDetail';
 import Calendar from './pages/Calendar';
@@ -39,12 +40,13 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="/home" replace />} />
+        <Route index element={<Navigate to="/notes" replace />} />
         <Route path="home" element={<Home />} />
         <Route path="notes" element={<Navigate to="/notes/new" replace />} />
         <Route path="notes/new" element={<NoteEditorObsidian />} />
         <Route path="notes/:id" element={<NoteEditorObsidian />} />
         <Route path="files" element={<Files />} />
+        <Route path="files/:id" element={<FileDetail />} />
         <Route path="folders" element={<FoldersList />} />
         <Route path="folders/:id" element={<FolderDetail />} />
         <Route path="calendar" element={<Calendar />} />

@@ -19,32 +19,12 @@ export default function NotesFileList() {
 
   const currentNoteId = id && id !== 'new' ? id : null;
 
-  const today = new Date().toISOString().slice(0, 10);
-
   return (
     <div className="notes-file-list">
       <div className="notes-file-list-header">
-        <div className="notes-file-list-toolbar">
-          <button type="button" className="obsidian-icon-btn" title="Edit">
-            <Codicon name="edit" size={16} />
-          </button>
-          <Link to="/notes/new" className="obsidian-icon-btn" title="New note">
-            <Codicon name="add" size={16} />
-          </Link>
-          <button type="button" className="obsidian-icon-btn" title="Upload">
-            <Codicon name="file-media" size={16} />
-          </button>
-          <button type="button" className="obsidian-icon-btn" title="Sort">
-            <Codicon name="sort-precedence" size={16} />
-          </button>
-          <button type="button" className="obsidian-icon-btn" title="Move up">
-            <Codicon name="arrow-up" size={16} />
-          </button>
-          <button type="button" className="obsidian-icon-btn" title="Move down">
-            <Codicon name="arrow-down" size={16} />
-          </button>
-        </div>
-        <span className="notes-file-list-date">{today}</span>
+        <Link to="/notes/new" className="obsidian-icon-btn" title="New note">
+          <Codicon name="add" size={16} />
+        </Link>
       </div>
       <div className="notes-file-list-items">
         {notes.map((n) => (
@@ -54,7 +34,6 @@ export default function NotesFileList() {
             className={`notes-file-item ${currentNoteId === n.id ? 'active' : ''}`}
           >
             <span className="notes-file-title">{n.title || 'Untitled'}</span>
-            {n.folder_id && <span className="notes-file-badge">CANVAS</span>}
           </Link>
         ))}
         {notes.length === 0 && (
